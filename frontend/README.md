@@ -1,75 +1,47 @@
-# React + TypeScript + Vite
+# frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Vite + React + TypeScript app for [halfbuilt.me](https://halfbuilt.me).
 
-Currently, two official plugins are available:
+See the [repo README](../README.md) for install/dev commands.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Design system
 
-## React Compiler
+Tokens live in [src/index.css](src/index.css) as CSS custom properties on `:root`. Reach for the *role* variables (`--color-*`) in components; the raw brand colors exist so the roles have something to point at.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Palette
 
-## Expanding the ESLint configuration
+| Token | Value | Role |
+|---|---|---|
+| `--cream` | `#F7F3E8` | base for `--color-background` |
+| `--forest` | `#243C32` | base for `--color-text` / `--color-accent-contrast` |
+| `--mustard` | `#E9B949` | base for `--color-accent` |
+| `--sage` | `#B6C7AA` | base for `--color-border` |
+| `--charcoal` | `#292825` | neutral alternative, unassigned |
+| `--taupe` | `#A99F90` | neutral alternative, unassigned |
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+| Role token | Value | Used for |
+|---|---|---|
+| `--color-background` | `var(--cream)` | page background |
+| `--color-text` | `var(--forest)` | body text, links |
+| `--color-accent` | `var(--mustard)` | primary buttons, `::selection` |
+| `--color-border` | `var(--sage)` | dividers, outlines |
+| `--color-surface` | `#E8EDDF` | cards / raised surfaces |
+| `--color-text-muted` | `#526257` | secondary text |
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Focus rings (`:focus-visible`) and text selection (`::selection`) use `--forest` / `--mustard` directly, so they stay visible even before a component reaches for a role token.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Type
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Loaded from Google Fonts in [src/index.css](src/index.css):
 
-```
+- **`--font-heading`** — [Space Grotesk](https://fonts.google.com/specimen/Space+Grotesk) (weights 400/500/600/700). Used for `h1`–`h4` and `.wordmark`.
+- **`--font-body`** — [DM Sans](https://fonts.google.com/specimen/DM+Sans) (weights 400/500/600). Used for body copy and `.button-primary`.
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+Base body copy is `18px` / `1.7` line-height. Headings tighten tracking (`letter-spacing: -0.03em`, `-0.04em` for `.wordmark`) and use `font-weight: 600`/`700`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Utility classes
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- `.wordmark` — the site name/logotype treatment (heading font, weight 700, tighter tracking).
+- `.button-primary` — solid mustard button with forest text.
 
-```
+There's no component library yet — these are the only two utility classes defined so far. Extend `index.css` (or introduce a `styles/` split) as the design grows past a single global stylesheet.
