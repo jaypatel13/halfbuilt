@@ -1,3 +1,77 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
+:root {
+  /* Brand palette */
+  --cream: #F7F3E8;
+  --forest: #243C32;
+  --mustard: #E9B949;
+  --sage: #B6C7AA;
+
+  /* Neutral alternatives */
+  --charcoal: #292825;
+  --taupe: #A99F90;
+
+  /* Website roles */
+  --color-background: var(--cream);
+  --color-text: var(--forest);
+  --color-accent: var(--mustard);
+  --color-border: var(--sage);
+  --color-surface: #E8EDDF;
+  --color-text-muted: #526257;
+
+  /* Typography */
+  --font-heading: "Space Grotesk", sans-serif;
+  --font-body: "DM Sans", sans-serif;
+}
+
+body {
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.wordmark {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+a {
+  color: var(--forest);
+  text-underline-offset: 0.2em;
+}
+
+.button-primary {
+  background: var(--mustard);
+  color: var(--forest);
+  font-family: var(--font-body);
+  font-weight: 600;
+  padding: 0.75rem 1.25rem;
+  border: 0;
+  border-radius: 0.5rem;
+}
+
+:focus-visible {
+  outline: 3px solid var(--forest);
+  outline-offset: 4px;
+}
+
+::selection {
+  background: var(--mustard);
+  color: var(--forest);
+}
+
+
 .counter {
   font-size: 16px;
   padding: 5px 10px;
