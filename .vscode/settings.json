@@ -22,6 +22,10 @@
       "source.organizeImports": "explicit"
     }
   },
+  "go.useLanguageServer": true,
+  "go.formatTool": "gofumpt",
+  "go.lintTool": "staticcheck",
+  "go.lintOnSave": "package",
 
   // --- PYTHON CONFIGURATION ---
   "[python]": {
