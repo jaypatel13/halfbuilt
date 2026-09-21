@@ -39,3 +39,21 @@ The `backend/` app is written in Go.
    ```
 4. `cd backend && go run .` to start the app
 5. `cd backend && golangci-lint run` to lint (same check as CI)
+
+## Docker
+
+Both apps can be run in containers with Docker Compose. Each app has its own `Dockerfile`, and [compose.yaml](compose.yaml) ties them together. Docker is the only requirement; Node.js and Go are not needed on the host.
+
+1. Install [Docker](https://docs.docker.com/get-docker/) with Docker Compose
+2. `docker compose up --build` to build the images and start both services
+3. The frontend is on http://localhost:5173 and the backend on http://localhost:8080
+4. `docker compose down` to stop and remove the containers
+
+| Service    | Build                                                  | Port |
+| ---------- | ------------------------------------------------------ | ---- |
+| `backend`  | `backend/Dockerfile`: multi-stage Go build, distroless | 8080 |
+| `frontend` | `frontend/Dockerfile`: Node 22 running the Vite dev server | 5173 |
+
+- The frontend mounts `./frontend` into the container, so source changes hot reload without a rebuild.
+- Backend changes and dependency changes (`go.mod`, `package.json`) need a rebuild: `docker compose up --build`.
+- Run a single service with `docker compose up <service>`; follow logs with `docker compose logs -f <service>`.
