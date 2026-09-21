@@ -41,4 +41,5 @@ jobs:
           claude_args: |
             --model claude-sonnet-5
             --max-turns 20
+            --append-system-prompt "This session is non-interactive and ends as soon as you stop calling tools. Always run subagents in the foreground (run_in_background: false) and never end your turn to wait for one. Finish the whole review before stopping. If the review finds no major issues (nothing that should block merging), post a PR comment saying LGTM with `gh pr comment`, so the author can tell the review ran and the PR is good to merge. Minor nits do not block LGTM. If there are major issues, post those findings instead and do not say LGTM. Never finish silently."
             --allowedTools "Skill,mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*),Bash(gh issue view:*),Bash(gh search:*)"
