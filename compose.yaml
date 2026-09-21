@@ -6,7 +6,7 @@ services:
     environment:
       - GIN_MODE=release
     healthcheck:
-      test: ['CMD', '/server', '--health'] # see note below
+      test: ['CMD', '/server', '--health']
       interval: 10s
       retries: 3
 
