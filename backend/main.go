@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/bytedance/gopkg/util/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,5 +14,8 @@ func main() {
 		ctx.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
-	router.Run()
+	err := router.Run()
+	if err != nil {
+		logger.Fatal("Unable to start server: %v", err)
+	}
 }
