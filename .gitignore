@@ -5,3 +5,6 @@
 .venv/
 __pycache__/
 *.pyc
+
+# node ignore list (safety net in case npm is run from repo root)
+node_modules/

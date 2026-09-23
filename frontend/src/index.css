@@ -1,27 +1,28 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
 
 :root {
   /* Brand palette */
-  --cream: #F7F3E8;
-  --forest: #243C32;
-  --mustard: #E9B949;
-  --sage: #B6C7AA;
+  --cream: #f7f3e8;
+  --forest: #243c32;
+  --mustard: #e9b949;
+  --sage: #b6c7aa;
 
   /* Neutral alternatives */
   --charcoal: #292825;
-  --taupe: #A99F90;
+  --taupe: #a99f90;
 
   /* Website roles */
   --color-background: var(--cream);
   --color-text: var(--forest);
   --color-accent: var(--mustard);
   --color-border: var(--sage);
-  --color-surface: #E8EDDF;
+  --color-surface: #e8eddf;
   --color-text-muted: #526257;
 
   /* Typography */
-  --font-heading: "Space Grotesk", sans-serif;
-  --font-body: "DM Sans", sans-serif;
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
 }
 
 body {
@@ -33,7 +34,10 @@ body {
   line-height: 1.7;
 }
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
   font-family: var(--font-heading);
   font-weight: 600;
   line-height: 1.15;
