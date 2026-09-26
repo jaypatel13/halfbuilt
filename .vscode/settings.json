@@ -14,6 +14,12 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
 
+  // --- CSS / TAILWIND CONFIGURATION ---
+  // Use the Tailwind CSS IntelliSense language mode so v4 at-rules (@theme, @apply, ...) are recognised
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+
   // --- GO CONFIGURATION ---
   "[go]": {
     "editor.defaultFormatter": "golang.go",

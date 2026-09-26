@@ -1,76 +1,108 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 
-:root {
-  /* Brand palette */
-  --cream: #f7f3e8;
-  --forest: #243c32;
-  --mustard: #e9b949;
-  --sage: #b6c7aa;
+@theme {
+  /* Reset Tailwind's defaults so only the tokens below exist: no slate/gray/etc. palette,
+     no default font stack. Add new tokens here rather than reaching for arbitrary values. */
+  --color-*: initial;
+  --font-*: initial;
 
-  /* Neutral alternatives */
-  --charcoal: #292825;
-  --taupe: #a99f90;
+  /* Typefaces:*/
+  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
 
-  /* Website roles */
-  --color-background: var(--cream);
-  --color-text: var(--forest);
-  --color-accent: var(--mustard);
-  --color-border: var(--sage);
-  --color-surface: #e8eddf;
-  --color-text-muted: #526257;
+  /* Spacing rhythm: 4px base unit. Every spacing utility (p-*, m-*, gap-*, w-*, h-*, ...)
+     is a multiple of this, so p-4 = 16px, gap-6 = 24px. See frontend/README.md. */
+  --spacing: 0.25rem;
 
-  /* Typography */
-  --font-heading: 'Space Grotesk', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
+  /* Border radius scale: multiples of the spacing unit. Reset first so Tailwind's
+     default steps (xs, 3xl, 4xl, ...) don't leak in. Use rounded-sm ... rounded-full. */
+  --radius-*: initial;
+  --radius-sm: 0.25rem; /* 4px: chips, tags, inputs */
+  --radius-md: 0.5rem; /* 8px: buttons, form controls */
+  --radius-lg: 0.75rem; /* 12px: cards */
+  --radius-xl: 1rem; /* 16px: large cards, modals */
+  --radius-2xl: 1.5rem; /* 24px: hero images, feature panels */
+  --radius-full: 9999px; /* pills, avatars */
+
+  /* Utility colours */
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-white: #ffffff;
+
+  /* Neutral: warm stone for backgrounds, text and borders.
+     Anchors: 50 = cream #f7f3e8, 400 = taupe #a99f90, 900 = charcoal #292825 */
+  --color-neutral-50: #f7f3e8;
+  --color-neutral-100: #ece7db;
+  --color-neutral-200: #d5cec1;
+  --color-neutral-300: #bfb6a8;
+  --color-neutral-400: #a99f90;
+  --color-neutral-500: #8d8579;
+  --color-neutral-600: #726c62;
+  --color-neutral-700: #59544d;
+  --color-neutral-800: #403e38;
+  --color-neutral-900: #292825;
+
+  /* Forest: brand green (anchor: 800) */
+  --color-forest-50: #f2f9f5;
+  --color-forest-100: #e7efeb;
+  --color-forest-200: #d4ddd9;
+  --color-forest-300: #bfcbc5;
+  --color-forest-400: #aab8b2;
+  --color-forest-500: #8c9d95;
+  --color-forest-600: #6c8077;
+  --color-forest-700: #4d645a;
+  --color-forest-800: #243c32;
+  --color-forest-900: #172e25;
+
+  /* Mustard: brand accent (anchor: 300) */
+  --color-mustard-50: #fff6e3;
+  --color-mustard-100: #ffebc1;
+  --color-mustard-200: #f9d68d;
+  --color-mustard-300: #e9b949;
+  --color-mustard-400: #dcad3c;
+  --color-mustard-500: #be9118;
+  --color-mustard-600: #9a7400;
+  --color-mustard-700: #765805;
+  --color-mustard-800: #553e00;
+  --color-mustard-900: #362600;
+
+  /* Sage: soft green for borders and surfaces (anchor: 300) */
+  --color-sage-50: #f3f9ef;
+  --color-sage-100: #e8f0e2;
+  --color-sage-200: #d3e0ca;
+  --color-sage-300: #b6c7aa;
+  --color-sage-400: #aabb9e;
+  --color-sage-500: #8f9e83;
+  --color-sage-600: #718067;
+  --color-sage-700: #55634b;
+  --color-sage-800: #3a4731;
+  --color-sage-900: #222d19;
+
+  /* Roles: prefer these in components (bg-background, text-text, border-border, ...) */
+  --color-background: var(--color-neutral-50);
+  --color-surface: var(--color-sage-100);
+  --color-text: var(--color-forest-800);
+  --color-text-muted: var(--color-forest-700);
+  --color-accent: var(--color-mustard-300);
+  --color-accent-contrast: var(--color-forest-900);
+  --color-border: var(--color-sage-300);
 }
 
-body {
-  margin: 0;
-  background: var(--color-background);
-  color: var(--color-text);
-  font-family: var(--font-body);
-  font-size: 18px;
-  line-height: 1.7;
-}
+@layer base {
+  body {
+    margin: 0;
+    background: var(--color-background);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: 18px;
+    line-height: 1.7;
+  }
 
-h1,
-h2,
-h3,
-h4 {
-  font-family: var(--font-heading);
-  font-weight: 600;
-  line-height: 1.15;
-  letter-spacing: -0.03em;
-}
-
-.wordmark {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  letter-spacing: -0.04em;
-}
-
-a {
-  color: var(--forest);
-  text-underline-offset: 0.2em;
-}
-
-.button-primary {
-  background: var(--mustard);
-  color: var(--forest);
-  font-family: var(--font-body);
-  font-weight: 600;
-  padding: 0.75rem 1.25rem;
-  border: 0;
-  border-radius: 0.5rem;
-}
-
-:focus-visible {
-  outline: 3px solid var(--forest);
-  outline-offset: 4px;
-}
-
-::selection {
-  background: var(--mustard);
-  color: var(--forest);
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+  }
 }
