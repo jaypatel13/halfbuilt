@@ -37,14 +37,18 @@ Also available: `white`, `transparent` and `current`. There is no pure black; us
 
 ### Type
 
-One display face and one text face, loaded from Google Fonts in [src/index.css](src/index.css):
+One display face and one text face, self-hosted via [Fontsource](https://fontsource.org/) and imported at the top of [src/index.css](src/index.css):
 
-- **`font-display`**: [Space Grotesk](https://fonts.google.com/specimen/Space+Grotesk) (weights 400/500/600/700). Applied to `h1`–`h4` in the base layer; use it for the wordmark and other headline text.
-- **`font-sans`**: [DM Sans](https://fonts.google.com/specimen/DM+Sans) (weights 400/500/600). Applied to `body`.
+- **`font-display`**: [Space Grotesk](https://fonts.google.com/specimen/Space+Grotesk) (weights 400/500/600/700), via `@fontsource/space-grotesk`. Applied to `h1`–`h4` in the base layer; use it for the wordmark and other headline text.
+- **`font-sans`**: [DM Sans](https://fonts.google.com/specimen/DM+Sans) (weights 400/500/600), via `@fontsource/dm-sans`. Applied to `body`.
 
 Each falls back to the system UI font. There is no `font-mono` token yet. Add one when the site shows code.
 
-Base body copy is `18px` / `1.7` line-height, set in the base layer.
+**Fonts must be self-hosted, not loaded from the Google Fonts CDN (`fonts.googleapis.com`) or any other third-party font CDN.** Self-hosting keeps requests on our own domain (faster, no extra DNS/TLS handshake) and avoids sending visitor IPs to a third party on every page load, which some jurisdictions treat as an unlawful data transfer without consent. To add a new weight or typeface, install its `@fontsource/*` package and `@import` the specific weight's CSS file (e.g. `@import '@fontsource/dm-sans/700.css';`) — Vite bundles the referenced `.woff2` files as local assets automatically. Fontsource's generated CSS ships `font-display: swap` by default, so new text doesn't need to be hidden while the font loads.
+
+### Type scale
+
+Font sizes are `--text-*` tokens in the `@theme` block of [src/index.css](src/index.css), reset first (`--text-*: initial;`) so Tailwind's default sizes don't leak in. They follow a modular scale: each step is the previous one times `1.25` (major third), from a `1rem` (16px) base — `xs`, `sm`, `base`, `lg`, `xl`, `2xl`, `3xl`, `4xl`. `body` uses `text-lg`; `h1`–`h4` step down from `text-4xl` to `text-xl`. Add a new size to the scale rather than an arbitrary value like `text-[19px]`.
 
 ### Spacing
 
