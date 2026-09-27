@@ -57,7 +57,7 @@ Font sizes are `--text-*` tokens in the `@theme` block of [src/index.css](src/in
 Why 4px:
 
 - **It divides evenly.** 4px is small enough for tight control (icon gaps, borders, `p-1`/`p-2`) and still doubles cleanly into the 8px grid most layouts and design tools use.
-- **It fits the type.** Body copy is 18px with a 1.7 line height (about 30px). Sections built from 8px multiples (`p-4`, `p-6`, `p-8`, `p-12`) sit comfortably next to text at that size, while 4px steps handle the in-between cases.
+- **It fits the type.** Body copy is `text-lg` (20px) with a 1.7 line height (about 34px). Sections built from 8px multiples (`p-4`, `p-6`, `p-8`, `p-12`) sit comfortably next to text at that size, while 4px steps handle the in-between cases.
 - **It's in `rem`, not `px`,** so spacing scales when a user changes their browser font size.
 - **It keeps the numbers predictable.** Utility number × 4 = pixels, so nobody has to look anything up.
 
