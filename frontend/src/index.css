@@ -1,4 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import '@fontsource/dm-sans/400.css';
+@import '@fontsource/dm-sans/500.css';
+@import '@fontsource/dm-sans/600.css';
+@import '@fontsource/space-grotesk/400.css';
+@import '@fontsource/space-grotesk/500.css';
+@import '@fontsource/space-grotesk/600.css';
+@import '@fontsource/space-grotesk/700.css';
 @import 'tailwindcss';
 
 @theme {
@@ -10,6 +16,18 @@
   /* Typefaces:*/
   --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
   --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+
+  /* Modular type scale: 1.25 (major third) ratio from a 1rem base.
+     Reset first so Tailwind's default sizes don't leak in. */
+  --text-*: initial;
+  --text-xs: 0.64rem; /* 10.24px */
+  --text-sm: 0.8rem; /* 12.8px */
+  --text-base: 1rem; /* 16px */
+  --text-lg: 1.25rem; /* 20px */
+  --text-xl: 1.563rem; /* 25px */
+  --text-2xl: 1.953rem; /* 31.25px */
+  --text-3xl: 2.441rem; /* 39px */
+  --text-4xl: 3.052rem; /* 48.8px */
 
   /* Spacing rhythm: 4px base unit. Every spacing utility (p-*, m-*, gap-*, w-*, h-*, ...)
      is a multiple of this, so p-4 = 16px, gap-6 = 24px. See frontend/README.md. */
@@ -95,7 +113,7 @@
     background: var(--color-background);
     color: var(--color-text);
     font-family: var(--font-sans);
-    font-size: 18px;
+    font-size: var(--text-lg);
     line-height: 1.7;
   }
 
@@ -104,5 +122,21 @@
   h3,
   h4 {
     font-family: var(--font-display);
+  }
+
+  h1 {
+    font-size: var(--text-4xl);
+  }
+
+  h2 {
+    font-size: var(--text-3xl);
+  }
+
+  h3 {
+    font-size: var(--text-2xl);
+  }
+
+  h4 {
+    font-size: var(--text-xl);
   }
 }
