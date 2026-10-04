@@ -126,6 +126,8 @@ docker compose -f compose.prod.yaml up -d
 
 The server only needs `compose.prod.yaml` and `infra/Caddyfile`, not the whole repo. To deploy or roll back to a specific commit, set the tag first, e.g. `export TAG=sha-1a2b3c4`. Without it, `latest` is used.
 
+The deploy job logs the server in to GHCR with the job's short-lived `GITHUB_TOKEN` and logs out when it finishes, so the server keeps no registry credentials. If the packages are private, a manual `pull` on the server needs `docker login ghcr.io` first, using a token with the `read:packages` scope.
+
 - Caddy is the only service that publishes ports (80/443). It routes `/api/*` to the backend and everything else to the frontend.
 - The frontend image is built from the `prod` target in [frontend/Dockerfile](frontend/Dockerfile): the built static files are served by Caddy's `file_server` inside the image, configured by [frontend/Caddyfile](frontend/Caddyfile).
 - [infra/Caddyfile](infra/Caddyfile) requests a certificate for `halfbuilt.me`. That only succeeds when the domain's DNS points at the host.
