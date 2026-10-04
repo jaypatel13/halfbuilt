@@ -78,6 +78,7 @@ jobs:
 
     permissions:
       contents: read
+      packages: read
 
     env:
       DEPLOY_TARGET: ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}
@@ -101,14 +102,19 @@ jobs:
           ssh $SSH_OPTS "$DEPLOY_TARGET" 'cat > ~/halfbuilt/infra/Caddyfile' < infra/Caddyfile
 
       - name: Pull images and restart
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG="sha-${GITHUB_SHA::7}"
-          ssh $SSH_OPTS "$DEPLOY_TARGET" "
-            set -e
-            cd ~/halfbuilt
-            export TAG=$TAG
-            docker compose -f compose.prod.yaml pull
-            docker compose -f compose.prod.yaml up -d --remove-orphans
-            docker image prune -af --filter "until=168h"
-            docker compose -f compose.prod.yaml exec -T caddy caddy reload --config /etc/caddy/Caddyfile
-          "
+          # token goes over stdin so it never appears in the VPS process list
+          echo "$GHCR_TOKEN" | ssh $SSH_OPTS "$DEPLOY_TARGET" "docker login ghcr.io -u $GITHUB_ACTOR --password-stdin"
+
+          # quoted heredoc: the script reaches the VPS verbatim, only TAG is passed in
+          ssh $SSH_OPTS "$DEPLOY_TARGET" "TAG=sha-${GITHUB_SHA::7} bash -s" <<'EOF'
+          set -e
+          trap 'docker logout ghcr.io' EXIT
+          cd ~/halfbuilt
+          docker compose -f compose.prod.yaml pull
+          docker compose -f compose.prod.yaml up -d --remove-orphans
+          docker image prune -af --filter "until=168h"
+          docker compose -f compose.prod.yaml exec -T caddy caddy reload --config /etc/caddy/Caddyfile < /dev/null
+          EOF
