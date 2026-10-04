@@ -1,0 +1,114 @@
+name: Build and Deploy Docker Images
+
+on:
+  push:
+    branches: ['halfbuilt-production']
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - service: frontend
+            target: prod
+          - service: backend
+            target: ''
+
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+    env:
+      IMAGE_NAME: ${{ github.repository }}-${{ matrix.service }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to the Container Registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha
+            type=raw,value=latest
+
+      - name: Build and push image
+        id: push
+        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+        with:
+          context: ./${{ matrix.service }}
+          target: ${{ matrix.target }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+      - name: Generate artifact attestation
+        uses: actions/attest@v4
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+
+  deploy:
+    needs: build-and-push-image
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency: production
+
+    permissions:
+      contents: read
+
+    env:
+      DEPLOY_TARGET: ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}
+      SSH_OPTS: -o StrictHostKeyChecking=accept-new
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Copy compose and Caddy config to the VPS
+        run: |
+          ssh $SSH_OPTS "$DEPLOY_TARGET" 'mkdir -p ~/halfbuilt/infra'
+          ssh $SSH_OPTS "$DEPLOY_TARGET" 'cat > ~/halfbuilt/compose.prod.yaml' < compose.prod.yaml
+          ssh $SSH_OPTS "$DEPLOY_TARGET" 'cat > ~/halfbuilt/infra/Caddyfile' < infra/Caddyfile
+
+      - name: Pull images and restart
+        run: |
+          TAG="sha-${GITHUB_SHA::7}"
+          ssh $SSH_OPTS "$DEPLOY_TARGET" "
+            set -e
+            cd ~/halfbuilt
+            export TAG=$TAG
+            docker compose -f compose.prod.yaml pull
+            docker compose -f compose.prod.yaml up -d --remove-orphans
+            docker image prune -af --filter "until=168h"
+            docker compose -f compose.prod.yaml exec -T caddy caddy reload --config /etc/caddy/Caddyfile
+          "
