@@ -117,7 +117,7 @@ Dev ports bind to `127.0.0.1` only, so they aren't reachable from your network. 
 
 ### Production
 
-Pushing to the `halfbuilt-production` branch runs [the publish workflow](.github/workflows/create_and_publish_docker_image.yaml). It builds both images and pushes them to GHCR as `ghcr.io/jaypatel13/halfbuilt-{frontend,backend}`, tagged `latest` and `sha-<short commit>`. On the server:
+Pushing to the `halfbuilt-production` branch runs [the build and deploy workflow](.github/workflows/build-and-deploy-docker-images.yaml). It builds both images and pushes them to GHCR as `ghcr.io/jaypatel13/halfbuilt-{frontend,backend}`, tagged `latest` and `sha-<short commit>`. On the server:
 
 ```sh
 docker compose -f compose.prod.yaml pull

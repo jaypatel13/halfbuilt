@@ -25,6 +25,6 @@ func main() {
 
 	err := router.Run()
 	if err != nil {
-		logger.Fatal("Unable to start server: %v", err)
+		logger.Fatalf("Unable to start server: %v", err)
 	}
 }
