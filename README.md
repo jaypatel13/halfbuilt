@@ -39,7 +39,7 @@ The list follows common industry practice: scopes name a *module or area of the 
 | `frontend` | The Vite + React app, Tailwind theme, components | `frontend/` |
 | `backend` | The Go service | `backend/` |
 | `deps` | Dependency updates, always with type `build` | `package.json`, `go.mod`, `pyproject.toml`, lockfiles |
-| `docker` | Dockerfiles and compose | `*/Dockerfile`, `compose.yaml` |
+| `docker` | Dockerfiles and compose | `*/Dockerfile`, `compose*.yaml` |
 | `infra` | Deployment and infrastructure config | `infra/` |
 | `tooling` | Linters, formatters, pre-commit, editor and repo config | `.pre-commit-config.yaml`, `.prettierrc`, `.vscode/`, `eslint.config.js` |
 | `review` / `lint` | Name the GitHub Actions workflow, with type `ci` | `.github/workflows/claude-review.yaml`, `lint.yaml` |
@@ -91,18 +91,42 @@ The `backend/` app is written in Go.
 
 ## Docker
 
-Both apps can be run in containers with Docker Compose. Each app has its own `Dockerfile`, and [compose.yaml](compose.yaml) ties them together. Docker is the only requirement; Node.js and Go are not needed on the host.
+Both apps run in containers with Docker Compose. Docker is the only requirement; Node.js and Go are not needed on the host.
+
+| File | Purpose |
+| --- | --- |
+| [compose.yaml](compose.yaml) | Development: builds both services from source, with hot reload. The default file, so a plain `docker compose` command uses it |
+| [compose.prod.yaml](compose.prod.yaml) | Production: runs the published images behind [Caddy](https://caddyserver.com/), with automatic HTTPS. Self-contained, passed with `-f` |
+
+### Development
 
 1. Install [Docker](https://docs.docker.com/get-docker/) with Docker Compose
-2. `docker compose up --build` to build the images and start both services
+2. `docker compose up --build` to start both services
 3. The frontend is on http://localhost:5173 and the backend on http://localhost:8080
 4. `docker compose down` to stop and remove the containers
 
-| Service    | Build                                                  | Port |
-| ---------- | ------------------------------------------------------ | ---- |
-| `backend`  | `backend/Dockerfile`: multi-stage Go build, distroless | 8080 |
-| `frontend` | `frontend/Dockerfile`: Node 22 running the Vite dev server | 5173 |
+Caddy doesn't run in dev. The Vite dev server proxies `/api/*` to the backend instead (see `server.proxy` in [vite.config.ts](frontend/vite.config.ts)), so the frontend can call relative `/api/...` URLs in both dev and production.
 
-- The frontend mounts `./frontend` into the container, so source changes hot reload without a rebuild.
-- Backend changes and dependency changes (`go.mod`, `package.json`) need a rebuild: `docker compose up --build`.
-- Run a single service with `docker compose up <service>`; follow logs with `docker compose logs -f <service>`.
+Each service can be run on its own:
+
+- **Backend only:** `docker compose up backend`, then call it directly, e.g. `curl localhost:8080/healthz`.
+- **Frontend on the host:** run `docker compose up backend`, then `cd frontend && npm run dev`. The proxy defaults to `localhost:8080`.
+- **Both in containers:** `docker compose up`. The frontend mounts `./frontend`, so source changes hot reload without a rebuild.
+
+Dev ports bind to `127.0.0.1` only, so they aren't reachable from your network. Backend changes and dependency changes (`go.mod`, `package.json`) need a rebuild, so add `--build`. Follow logs with `docker compose logs -f <service>`.
+
+### Production
+
+Pushing to the `halfbuilt-production` branch runs [the publish workflow](.github/workflows/create_and_publish_docker_image.yaml). It builds both images and pushes them to GHCR as `ghcr.io/jaypatel13/halfbuilt-{frontend,backend}`, tagged `latest` and `sha-<short commit>`. On the server:
+
+```sh
+docker compose -f compose.prod.yaml pull
+docker compose -f compose.prod.yaml up -d
+```
+
+The server only needs `compose.prod.yaml` and `infra/Caddyfile`, not the whole repo. To deploy or roll back to a specific commit, set the tag first, e.g. `export TAG=sha-1a2b3c4`. Without it, `latest` is used.
+
+- Caddy is the only service that publishes ports (80/443). It routes `/api/*` to the backend and everything else to the frontend.
+- The frontend image is built from the `prod` target in [frontend/Dockerfile](frontend/Dockerfile): the built static files are served by Caddy's `file_server` inside the image, configured by [frontend/Caddyfile](frontend/Caddyfile).
+- [infra/Caddyfile](infra/Caddyfile) requests a certificate for `halfbuilt.me`. That only succeeds when the domain's DNS points at the host.
+- Backend routes the browser calls must live under `/api` (`router.Group("/api")`). Caddy forwards the path unchanged.

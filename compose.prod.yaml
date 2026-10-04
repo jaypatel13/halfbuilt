@@ -1,0 +1,39 @@
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./infra/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - halfbuilt
+
+  backend:
+    image: ghcr.io/jaypatel13/halfbuilt-backend:${TAG:-latest}
+    restart: unless-stopped
+    environment:
+      - GIN_MODE=release
+    healthcheck:
+      test: ['CMD', '/server', '--health']
+      interval: 10s
+      retries: 3
+    networks:
+      - halfbuilt
+
+  frontend:
+    image: ghcr.io/jaypatel13/halfbuilt-frontend:${TAG:-latest}
+    restart: unless-stopped
+    networks:
+      - halfbuilt
+
+networks:
+  halfbuilt:
+
+volumes:
+  caddy_data:
