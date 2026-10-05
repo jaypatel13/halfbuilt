@@ -117,14 +117,23 @@ Dev ports bind to `127.0.0.1` only, so they aren't reachable from your network. 
 
 ### Production
 
-Pushing to the `halfbuilt-production` branch runs [the build and deploy workflow](.github/workflows/build-and-deploy-docker-images.yaml). It builds both images and pushes them to GHCR as `ghcr.io/jaypatel13/halfbuilt-{frontend,backend}`, tagged `latest` and `sha-<short commit>`. On the server:
+Production is deployed by releasing, not by pushing a branch.
+
+1. Merge PRs to `main` as usual. [release-please](.github/workflows/release-please.yaml) keeps a release PR open that collects every unreleased change, works out the next version from the commit types (`feat` bumps minor, `fix` bumps patch, `!` bumps major), and updates `CHANGELOG.md` (created by the first release).
+2. When you want to ship, merge the release PR. That creates the `vX.Y.Z` tag and a GitHub Release with the changelog, then runs [the build and deploy workflow](.github/workflows/build-and-deploy-docker-images.yaml).
+3. The workflow builds both images and pushes them to GHCR as `ghcr.io/jaypatel13/halfbuilt-{frontend,backend}`, tagged with the version (`1.2.0`), `sha-<short commit>` and `latest`, then deploys that version to the VPS.
+
+**Deployment history:** each release is a tag and a GitHub Release. Each deploy is recorded under the repo's Deployments → `production`.
+
+**Rollback:** in the Actions tab, run *Build and Deploy Docker Images* with an earlier version, e.g. `v1.1.0`. It redeploys that release's existing images and its compose and Caddy config, without rebuilding.
+
+**Manual deploy on the server:** the server only needs `compose.prod.yaml` and `infra/Caddyfile`, not the whole repo:
 
 ```sh
+export TAG=1.2.0   # without it, latest is used
 docker compose -f compose.prod.yaml pull
 docker compose -f compose.prod.yaml up -d
 ```
-
-The server only needs `compose.prod.yaml` and `infra/Caddyfile`, not the whole repo. To deploy or roll back to a specific commit, set the tag first, e.g. `export TAG=sha-1a2b3c4`. Without it, `latest` is used.
 
 The deploy job logs the server in to GHCR with the job's short-lived `GITHUB_TOKEN` and logs out when it finishes, so the server keeps no registry credentials. If the packages are private, a manual `pull` on the server needs `docker login ghcr.io` first, using a token with the `read:packages` scope.
 

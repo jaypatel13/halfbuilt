@@ -1,14 +1,27 @@
 name: Build and Deploy Docker Images
 
 on:
-  push:
-    branches: ['halfbuilt-production']
+  # called by release-please once a release (and its tag) is created
+  workflow_call:
+    inputs:
+      version:
+        description: Release tag to build and deploy, e.g. v1.2.0
+        required: true
+        type: string
+  # manual rollback: redeploys an existing release without rebuilding
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release tag to redeploy, e.g. v1.1.0
+        required: true
+        type: string
 
 env:
   REGISTRY: ghcr.io
 
 jobs:
   build-and-push-image:
+    if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
 
     strategy:
@@ -31,6 +44,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.version }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -48,6 +63,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
+            type=semver,pattern={{version}},value=${{ inputs.version }}
             type=sha
             type=raw,value=latest
 
@@ -72,6 +88,8 @@ jobs:
 
   deploy:
     needs: build-and-push-image
+    # still runs when the build was skipped for a manual rollback
+    if: ${{ !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     environment: production
     concurrency: production
@@ -83,10 +101,19 @@ jobs:
     env:
       DEPLOY_TARGET: ${{ vars.DEPLOY_USER }}@${{ vars.DEPLOY_HOST }}
       SSH_OPTS: -o StrictHostKeyChecking=accept-new
+      VERSION: ${{ inputs.version }}
 
     steps:
+      - name: Validate version
+        run: |
+          [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] \
+            || { echo "::error::version must look like v1.2.3, got '$VERSION'"; exit 1; }
+
+      # config comes from the release being deployed, so a rollback restores its config too
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.version }}
 
       - name: Tailscale
         uses: tailscale/github-action@v4
@@ -108,8 +135,9 @@ jobs:
           # token goes over stdin so it never appears in the VPS process list
           echo "$GHCR_TOKEN" | ssh $SSH_OPTS "$DEPLOY_TARGET" "docker login ghcr.io -u $GITHUB_ACTOR --password-stdin"
 
+          # images are tagged without the leading v (v1.2.0 -> 1.2.0)
           # quoted heredoc: the script reaches the VPS verbatim, only TAG is passed in
-          ssh $SSH_OPTS "$DEPLOY_TARGET" "TAG=sha-${GITHUB_SHA::7} bash -s" <<'EOF'
+          ssh $SSH_OPTS "$DEPLOY_TARGET" "TAG=${VERSION#v} bash -s" <<'EOF'
           set -e
           trap 'docker logout ghcr.io' EXIT
           cd ~/halfbuilt
