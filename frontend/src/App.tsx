@@ -1,9 +1,9 @@
-import logo from './assets/icons/halfbuilt-icon-cream.png'
+import NavBar from './components/NavBar'
 
 function App() {
   return (
     <main>
-      <img src={logo} alt="halfbuilt" height={48} width={48} />
+      <NavBar />
     </main>
   )
 }
