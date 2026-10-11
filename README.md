@@ -4,7 +4,7 @@
 1. Install uv: https://docs.astral.sh/uv/getting-started/installation/
 2. `uv sync`
 3. `uv run pre-commit install` to enable git hooks (formatting, linting, commit message check)
-4. `uv run pytest` to verify
+4. `uv run pre-commit run --all-files` to verify the hooks work
 
 ## Commit Messages
 
