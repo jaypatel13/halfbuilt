@@ -1,28 +1,20 @@
 import type { SitePage } from '../types/site-page'
 
-export const sitePage: SitePage[] = [
+export const sitePages: SitePage[] = [
   {
     id: 1,
-    title: 'Home',
-  },
-  {
-    id: 2,
     title: 'About me',
   },
   {
-    id: 3,
+    id: 2,
     title: 'Experience',
   },
   {
-    id: 4,
+    id: 3,
     title: 'Projects',
   },
   {
-    id: 5,
+    id: 4,
     title: 'Blog',
-  },
-  {
-    id: 6,
-    title: 'Contact',
   },
 ]
